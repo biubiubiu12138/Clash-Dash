@@ -1,0 +1,36 @@
+name: Personal TrollStore IPA
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/personal-ipa.yml'
+      - 'scripts/build-personal-ipa.sh'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build unsigned device IPA
+        run: bash scripts/build-personal-ipa.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Clash-Dash-TrollStore
+          path: |
+            build/Clash-Dash-TrollStore.ipa
+            build/SHA256SUMS
+            LICENSE
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-diagnostics
+          path: build/build.log
+          if-no-files-found: ignore
